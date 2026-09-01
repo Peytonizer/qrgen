@@ -4,6 +4,17 @@ One line per meaningful change. Newest first.
 
 ## Unreleased
 
+- Added downloads (build step 7): `js/download.js` builds each card's SVG and PNG at
+  1000px (via `qr-code-styling`'s own `getRawData`, composited with `caption.js` when
+  captions are on), vendors JSZip 3.10.1 for the "download all" archive, and slugs
+  filenames per SPEC.md — lowercase, punctuation to hyphens, `-2`/`-3` for duplicate names,
+  `contact-{n}` for a name with no usable slug. The Download step now has a real per-person
+  SVG/PNG button row and a "Download all (.zip)" button; both build their blobs on click
+  rather than eagerly, since regenerating every card on every style change would be wasted
+  work. Verified the blob-building logic directly (correct MIME types, PNG width exactly
+  1000px with height growing for a wrapped caption, the comma in "Smith, Jr" intact, the
+  zip's contents and duplicate-name filenames all correct) without exercising the actual
+  download buttons, to avoid saving test files into a real Downloads folder.
 - Added captions (build step 6): `js/caption.js` composites the person's name, email and
   phone beneath the QR for both export paths — an offscreen canvas for PNG, an outer `<svg>`
   wrapping the QR's own for SVG — so a caption is never preview-only styling. The Style step

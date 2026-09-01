@@ -8,6 +8,7 @@ can be reproduced or updated.
 |---|---|---|---|---|
 | `xlsx.full.min.js` | [SheetJS Community Edition](https://sheetjs.com/) | 0.18.5 | Apache-2.0 | `https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js` |
 | `qr-code-styling.js` | [qr-code-styling](https://github.com/kozakdenys/qr-code-styling) | 1.9.2 | MIT | `https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js` |
+| `jszip.min.js` | [JSZip](https://stuk.github.io/jszip/) | 3.10.1 | MIT OR GPL-3.0-or-later (used under MIT) | `https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js` |
 
 Apache-2.0 and MIT both permit redistribution. `qr-code-styling.js` attaches itself as
 the global `QRCodeStyling` (UMD build); its published `lib/` bundle is already minified,

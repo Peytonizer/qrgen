@@ -15,9 +15,8 @@
 </header>
 
 <main>
-  <!-- The step rail and four panels, only the current one visible. Download (4) is a
-       placeholder until build step 7. The dark staging room visual direction is a
-       step 8 design pass, not this one. -->
+  <!-- The step rail and four panels, only the current one visible. The dark staging
+       room visual direction is a step 8 design pass, not this one. -->
   <nav class="step-rail" aria-label="qrgen steps">
     <ol>
       <li><button type="button" class="step-rail__step" data-step="1">1. File</button></li>
@@ -76,7 +75,9 @@
   </section>
 
   <section class="step-panel" id="step-4" data-step-panel="4" hidden>
-    <p class="placeholder-note">Downloads land in a later build step.</p>
+    <h2>Download</h2>
+    <button type="button" id="download-all">Download all (.zip)</button>
+    <div class="download-grid" id="download-grid"></div>
   </section>
 
   <p class="privacy">
@@ -91,6 +92,7 @@
 
 <script src="vendor/xlsx.full.min.js"></script>
 <script src="vendor/qr-code-styling.js"></script>
+<script src="vendor/jszip.min.js"></script>
 <script type="module" src="js/app.js"></script>
 
 </body>

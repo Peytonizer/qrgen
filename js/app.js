@@ -8,8 +8,12 @@ import { FIELDS, FIELD_LABELS, detectMapping, validateRows } from './columns.js'
 import { buildVCard } from './vcard.js';
 import { PRESETS, isGradient, checkColours, checkGradientColours, buildQrOptions, createQrCode } from './qr.js';
 import { composeCaptionedSvg } from './caption.js';
+import { generateFilenameSlugs, buildCardBlobs, buildZipBlob, triggerDownload } from './download.js';
 
 const QR_PREVIEW_SIZE = 220;
+// Target at least 1000px square for the code itself, before the caption is
+// added — high enough to print (SPEC.md, build order step 7).
+const QR_EXPORT_SIZE = 1000;
 
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('file-input');
@@ -23,6 +27,8 @@ const resetToPresetBtn = document.getElementById('reset-to-preset');
 const colourStatus = document.getElementById('colour-status');
 const captionToggle = document.getElementById('caption-toggle');
 const qrGrid = document.getElementById('qr-grid');
+const downloadAllBtn = document.getElementById('download-all');
+const downloadGrid = document.getElementById('download-grid');
 
 const stepRail = createStepRail(
   document.querySelector('.step-rail'),
@@ -153,6 +159,7 @@ function renderRowReview() {
   }
 
   renderQrGrid();
+  renderDownloadGrid();
 }
 
 // --- Style: preset picker, colour wells, preview grid -----------------------
@@ -319,6 +326,68 @@ function renderQrGrid() {
     qrGrid.appendChild(card);
   });
 }
+
+// --- Download: per-card SVG/PNG buttons and the "download all" zip --------
+
+/** Current export options shared by every card: the export size, style and caption setting. */
+function exportOptions() {
+  return { style: state.style, preset: currentPreset(), size: QR_EXPORT_SIZE, captionsEnabled: state.captionsEnabled };
+}
+
+/** Runs `task` with `button` disabled and its label swapped to `busyLabel`, restoring both after. */
+async function withBusyButton(button, busyLabel, task) {
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = busyLabel;
+  try {
+    await task();
+  } finally {
+    button.disabled = false;
+    button.textContent = original;
+  }
+}
+
+/** Rebuilds the download grid: one row per valid entry, with SVG/PNG buttons that build and download that card's files on click. */
+function renderDownloadGrid() {
+  downloadGrid.innerHTML = '';
+  if (!state.valid) return;
+
+  const slugs = generateFilenameSlugs(state.valid);
+
+  state.valid.forEach(({ fields }, i) => {
+    const row = document.createElement('div');
+    row.className = 'download-row';
+
+    const name = document.createElement('span');
+    name.className = 'download-row__name';
+    name.textContent = [fields.firstName, fields.lastName].filter(Boolean).join(' ');
+    row.appendChild(name);
+
+    ['svg', 'png'].forEach((format) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = format.toUpperCase();
+      button.addEventListener('click', () =>
+        withBusyButton(button, '…', async () => {
+          const { svgBlob, pngBlob } = await buildCardBlobs({ fields, ...exportOptions() });
+          const blob = format === 'svg' ? svgBlob : pngBlob;
+          triggerDownload(blob, `${slugs[i]}.${format}`);
+        })
+      );
+      row.appendChild(button);
+    });
+
+    downloadGrid.appendChild(row);
+  });
+}
+
+downloadAllBtn.addEventListener('click', () =>
+  withBusyButton(downloadAllBtn, 'Building zip…', async () => {
+    const slugs = generateFilenameSlugs(state.valid);
+    const zipBlob = await buildZipBlob(state.valid, slugs, exportOptions());
+    triggerDownload(zipBlob, 'qr-codes.zip');
+  })
+);
 
 // --- File loading -------------------------------------------------------
 

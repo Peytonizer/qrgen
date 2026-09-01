@@ -297,6 +297,50 @@ main { margin-top: var(--gap); }
   font-weight: 600;
 }
 
+#download-all {
+  margin-bottom: var(--gap);
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--surface);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#download-all:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.download-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.download-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.download-row__name { flex: 1; }
+
+.download-row button {
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.download-row button:disabled { opacity: 0.6; cursor: not-allowed; }
+
 .table-scroll {
   overflow-x: auto;
   border: 1px solid var(--line);
