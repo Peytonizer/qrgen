@@ -4,6 +4,14 @@ One line per meaningful change. Newest first.
 
 ## Unreleased
 
+- Added `js/vcard.js`, building a vCard 3.0 string per RFC 2426 from a row's mapped fields
+  (build step 4): CRLF line joins, no 75-octet folding, and escaping applied in the order
+  the RFC requires — backslash, then semicolon, comma, newline — so the escapes can't
+  escape each other. Verified against all 10 valid fixture rows, including the comma in
+  "Smith, Jr" and the "ë" in "Zoë Fitzgerald-Byrne" surviving intact. **Still needs a
+  real-phone scan test** (iPhone and Android) once build step 5 produces an actual QR code
+  to scan — a vCard that looks correct on inspection and fails to import on a phone is
+  called out in SPEC.md as the most expensive bug in this project to find late.
 - Added the step rail and column mapping (build step 3): a four-step nav (File, Columns,
   Style, Download) where step 1 gates step 2, then all four are freely reachable once a
   file is parsed. Columns auto-detects the five fields from the header synonym lists in
