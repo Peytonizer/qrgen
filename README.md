@@ -7,7 +7,7 @@ generates a QR code for each person. Scanning one with a phone camera offers to 
 person straight to the contacts app. Download codes individually as SVG or PNG, or grab
 the whole set as a zip.
 
-**Use it at [peytonizer.github.io/qrgen](https://peytonizer.github.io/qrgen/)** — there is
+**Use it at [qrgen.noradz.io](https://qrgen.noradz.io/)** — there is
 nothing to install.
 
 ## Your data never leaves your browser
@@ -79,8 +79,9 @@ python3 -m http.server 8000
 
 Then visit `http://localhost:8000`.
 
-There is no build step and no dependencies to install. The three libraries qrgen uses are
-committed in `vendor/` — see `vendor/README.md` for versions and licences.
+There is no build step and no dependencies to install. The libraries qrgen uses are
+committed in `vendor/` — see `vendor/README.md` for versions and licences — and its
+typefaces are self-hosted in `fonts/`, see `fonts/README.md`.
 
 ## Licence
 
@@ -91,3 +92,4 @@ MIT — see [LICENSE](LICENSE).
 - [SheetJS](https://sheetjs.com/) — reads the Excel and CSV files
 - [qr-code-styling](https://github.com/kozakdenys/qr-code-styling) — renders the codes
 - [JSZip](https://stuk.github.io/jszip/) — builds the download archive
+- [Bricolage Grotesque](https://fonts.google.com/specimen/Bricolage+Grotesque), [IBM Plex Sans and IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Sans) — the interface's typefaces, self-hosted rather than loaded from Google Fonts

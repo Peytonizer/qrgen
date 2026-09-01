@@ -2,8 +2,12 @@
 
 One line per meaningful change. Newest first.
 
-## Unreleased
+## v1.0 — 2026-09-01
 
+- Documentation (build step 9): README now points at the live custom domain
+  (qrgen.noradz.io) instead of the default GitHub Pages URL, and credits the self-hosted
+  typefaces alongside the vendored libraries. This is the v1.0 line — every feature in
+  SPEC.md's v1 scope is built and verified in-browser against the fixture data.
 - Delivered the dark staging room visual direction (build step 8): self-hosted Bricolage
   Grotesque, IBM Plex Sans and IBM Plex Mono (SIL OFL, `fonts/`, latin subset only — see
   `fonts/README.md`) and rebuilt `css/style.css` around SPEC.md's exact colour tokens and
