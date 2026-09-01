@@ -104,9 +104,16 @@ main { margin-top: var(--gap); }
   list-style: none;
 }
 
+/* The flex/grid item is the <li>, not the <button> inside it — flex-grow and grid's
+   stretch both act on the item's own box, so the button needs width: 100% to actually
+   fill it. Without this, every button just sizes to its own text, packs to the left,
+   and leaves the rest of the row empty (which is also why the row never used to wrap
+   on a narrow screen: four unstretched buttons are well under 640px on their own). */
+.step-rail li { flex: 1; }
+
 .step-rail__step {
   position: relative;
-  flex: 1;
+  width: 100%;
   padding: 0.7rem 0.5rem;
   border: 1px solid var(--line);
   background: var(--bg-2);
@@ -119,9 +126,15 @@ main { margin-top: var(--gap); }
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 
-.step-rail__step:not(:first-child) { border-left: none; }
-.step-rail__step:first-child { border-radius: var(--radius) 0 0 var(--radius); }
-.step-rail__step:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+/* The "merged pill" treatment — adjoining buttons sharing one border instead of a
+   double-thick line between them — only applies once the rail is a single row. Below
+   640px each button wraps independently (see the media query at the bottom) and needs
+   its own full border on every side, current-step brass included. */
+@media (min-width: 641px) {
+  .step-rail__step:not(:first-child) { border-left: none; }
+  .step-rail__step:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+  .step-rail__step:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+}
 
 /* Connecting line between steps — a thin brass rule that only appears once a step is
    reachable, so the rail visually "extends" as the user progresses. Dropped below 640px
@@ -157,12 +170,8 @@ main { margin-top: var(--gap); }
 }
 
 @media (max-width: 640px) {
-  .step-rail ol { flex-wrap: wrap; gap: 0.5rem; }
-  .step-rail__step {
-    flex: 1 1 calc(50% - 0.25rem);
-    border-radius: var(--radius-sm) !important;
-    border-left: 1px solid var(--line) !important;
-  }
+  .step-rail ol { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .step-rail__step { border-radius: var(--radius-sm); }
   .step-rail__step::before { display: none; }
 }
 

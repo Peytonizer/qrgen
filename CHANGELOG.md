@@ -4,6 +4,20 @@ One line per meaningful change. Newest first.
 
 ## Unreleased
 
+- Fixed the step rail's current-step border losing its left (brass) edge on mobile —
+  reported as the "1. File" tile looking cut off. Root cause was one level deeper than the
+  visible symptom: `flex: 1` was set on the `<button>`, but the actual flex/grid item is its
+  `<li>` parent, so the buttons were never actually growing to fill the rail at *any* screen
+  width — they just packed to the left at their own content width, with the row's mobile
+  wrap breakpoint never visibly triggering either, since four unstretched buttons already
+  fit under 640px on their own. A first patch just fixed the border colour and swapped the
+  wrap technique to CSS Grid, but the underlying li/button mismatch would have kept biting;
+  moved `flex: 1` onto `.step-rail li` and gave the button `width: 100%` so it actually fills
+  its item's box at both breakpoints. Verified via computed styles and screenshots at both
+  widths (this sandbox can't resize a real window, so mobile used an iframe sized to it) that
+  the four steps are now genuinely equal-width — desktop as a seamless merged pill, mobile as
+  an evenly-filled 2×2 grid with a complete border, left edge included, on the current step.
+
 - Added "Download a blank template" and "Download sample data" links to step 1
   (`js/sample-data.js`). Both are generated client-side via SheetJS rather than committed as
   spreadsheet files — the project's file-in-repo rule applies even to fictional data — and
