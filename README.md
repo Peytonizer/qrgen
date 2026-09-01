@@ -21,9 +21,20 @@ internet and it would still work.
 1. Open the site and drop in an `.xlsx`, `.xls` or `.csv` file.
 2. Check the detected columns. qrgen guesses which column is which from the headers; if it
    guesses wrong, correct it with the dropdowns.
-3. Pick a style, and set the foreground and background colours if you want to match a
-   brand palette.
+3. Pick a style, set the foreground and background colours if you want to match a brand
+   palette, and choose whether each code carries a caption.
 4. Download the codes individually, or all at once as a zip.
+
+### Captions
+
+By default each code is exported with the person's name, email address and phone number
+printed beneath it — which is usually what makes a printed badge or table card useful. Turn
+the caption off and you get the bare code instead. The setting applies to the downloaded
+files, not just the on-screen preview.
+
+One caveat for SVG: text in an SVG renders in whatever font the application opening it has
+available, so a caption may look different in a vector editor than it does in the browser.
+If you need the caption to look exactly as designed, use the PNG.
 
 ### About the colours
 
