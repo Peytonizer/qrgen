@@ -1,24 +1,35 @@
-// Entry point: wires the drop zone, the step rail, and column mapping together.
-// Style and download (steps 3-4) are placeholders until later build steps —
-// see SPEC.md, "Build order".
+// Entry point: wires the drop zone, the step rail, column mapping and the
+// style/preview grid together. Download (step 4) is a placeholder until its
+// own build step — see SPEC.md, "Build order".
 
 import { isAcceptedFile, parseFile } from './parse.js';
 import { createStepRail } from './steps.js';
 import { FIELDS, FIELD_LABELS, detectMapping, validateRows } from './columns.js';
+import { buildVCard } from './vcard.js';
+import { PRESETS, isGradient, checkColours, checkGradientColours, buildQrOptions, createQrCode } from './qr.js';
+
+const QR_PREVIEW_SIZE = 220;
 
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('file-input');
 const errorEl = document.getElementById('parse-error');
 const mappingGrid = document.getElementById('mapping-grid');
 const rowReview = document.getElementById('row-review');
+const presetPicker = document.getElementById('preset-picker');
+const fgColorInput = document.getElementById('fg-color');
+const bgColorInput = document.getElementById('bg-color');
+const resetToPresetBtn = document.getElementById('reset-to-preset');
+const colourStatus = document.getElementById('colour-status');
+const qrGrid = document.getElementById('qr-grid');
 
 const stepRail = createStepRail(
   document.querySelector('.step-rail'),
   [...document.querySelectorAll('.step-panel')]
 );
 
-// The current file's parsed data and mapping. Re-populated on each successful
-// parse; mapping is mutated in place as the user corrects the mapping selects.
+// The current file's parsed data, mapping and style choice. Re-populated on
+// each successful parse; mapping and style are mutated in place as the user
+// adjusts the mapping selects, preset and colour wells.
 let state = null;
 
 function showError(message) {
@@ -106,7 +117,11 @@ function buildFieldsTable(entries, { withReason }) {
   return table;
 }
 
-/** Re-validates the current rows against the current mapping and re-renders the review tables. */
+/**
+ * Re-validates the current rows against the current mapping, re-renders the
+ * review tables, and regenerates the style preview grid (its inputs — the
+ * valid rows — just changed).
+ */
 function renderRowReview() {
   const { valid, skipped } = validateRows(state.rows, state.mapping);
   state.valid = valid;
@@ -134,7 +149,141 @@ function renderRowReview() {
     skippedWrap.appendChild(buildFieldsTable(skipped, { withReason: true }));
     rowReview.appendChild(skippedWrap);
   }
+
+  renderQrGrid();
 }
+
+// --- Style: preset picker, colour wells, preview grid -----------------------
+
+function currentPreset() {
+  return PRESETS.find((preset) => preset.id === state.style.presetId);
+}
+
+function renderPresetPicker() {
+  presetPicker.innerHTML = '';
+  PRESETS.forEach((preset) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'preset-tile';
+    button.classList.toggle('is-selected', preset.id === state.style.presetId);
+
+    const swatch = document.createElement('span');
+    swatch.className = 'preset-tile__swatch';
+    swatch.style.background = isGradient(preset.foreground)
+      ? `linear-gradient(45deg, ${preset.foreground.stops[0]}, ${preset.foreground.stops[1]})`
+      : preset.foreground.color;
+    button.appendChild(swatch);
+
+    button.appendChild(document.createTextNode(preset.name));
+    button.addEventListener('click', () => selectPreset(preset.id));
+    presetPicker.appendChild(button);
+  });
+}
+
+/** Selects a preset: resets both colours to its values and clears any "modified" edit. */
+function selectPreset(id) {
+  const preset = PRESETS.find((p) => p.id === id);
+  state.style = {
+    presetId: preset.id,
+    foreground: isGradient(preset.foreground) ? { ...preset.foreground, stops: [...preset.foreground.stops] } : { ...preset.foreground },
+    background: preset.background,
+  };
+  hideColourStatus();
+  renderPresetPicker();
+  renderColourWells();
+  renderQrGrid();
+}
+
+function hideColourStatus() {
+  colourStatus.hidden = true;
+  colourStatus.textContent = '';
+  colourStatus.classList.remove('is-blocked', 'is-caution');
+}
+
+function showColourStatus(verdict) {
+  if (verdict.status === 'ok') {
+    hideColourStatus();
+    return;
+  }
+  colourStatus.hidden = false;
+  colourStatus.textContent = verdict.reason;
+  colourStatus.classList.toggle('is-blocked', verdict.status === 'blocked');
+  colourStatus.classList.toggle('is-caution', verdict.status === 'caution');
+}
+
+/** Syncs the colour well inputs to state.style. The foreground well is disabled for the Gradient preset — it has no single colour to edit (see SPEC.md; resolved with Matt as: disable rather than reinterpret). */
+function renderColourWells() {
+  const gradient = isGradient(state.style.foreground);
+  fgColorInput.disabled = gradient;
+  fgColorInput.value = gradient ? state.style.foreground.stops[0] : state.style.foreground.color;
+  bgColorInput.value = state.style.background;
+}
+
+fgColorInput.addEventListener('input', () => {
+  const hex = fgColorInput.value;
+  const verdict = checkColours(hex, state.style.background);
+  if (verdict.status === 'blocked') {
+    showColourStatus(verdict);
+    fgColorInput.value = state.style.foreground.color;
+    return;
+  }
+  state.style.foreground = { color: hex };
+  showColourStatus(verdict);
+  renderQrGrid();
+});
+
+bgColorInput.addEventListener('input', () => {
+  const hex = bgColorInput.value;
+  const verdict = isGradient(state.style.foreground)
+    ? checkGradientColours(state.style.foreground.stops, hex)
+    : checkColours(state.style.foreground.color, hex);
+  if (verdict.status === 'blocked') {
+    showColourStatus(verdict);
+    bgColorInput.value = state.style.background;
+    return;
+  }
+  state.style.background = hex;
+  showColourStatus(verdict);
+  renderQrGrid();
+});
+
+resetToPresetBtn.addEventListener('click', () => selectPreset(state.style.presetId));
+
+/** Regenerates the preview grid: one QR card per currently valid row. */
+function renderQrGrid() {
+  qrGrid.innerHTML = '';
+  if (!state.valid) return;
+
+  const preset = currentPreset();
+  state.valid.forEach(({ fields }) => {
+    const card = document.createElement('div');
+    card.className = 'qr-card';
+
+    const qrContainer = document.createElement('div');
+    card.appendChild(qrContainer);
+
+    const name = document.createElement('p');
+    name.className = 'qr-card__name';
+    name.textContent = [fields.firstName, fields.lastName].filter(Boolean).join(' ');
+    card.appendChild(name);
+
+    qrGrid.appendChild(card);
+
+    const qr = createQrCode(
+      buildQrOptions({
+        data: buildVCard(fields),
+        size: QR_PREVIEW_SIZE,
+        foreground: state.style.foreground,
+        background: state.style.background,
+        dotsType: preset.dotsType,
+        cornersSquareType: preset.cornersSquareType,
+      })
+    );
+    qr.append(qrContainer);
+  });
+}
+
+// --- File loading -------------------------------------------------------
 
 async function handleFile(file) {
   if (!file) return;
@@ -149,9 +298,10 @@ async function handleFile(file) {
       showError(`"${file.name}" has no data rows.`);
       return;
     }
-    state = { headers, rows, mapping: detectMapping(headers) };
+    state = { headers, rows, mapping: detectMapping(headers), style: null };
     renderMappingGrid();
-    renderRowReview();
+    selectPreset(PRESETS[0].id); // also renders the colour wells and (empty) grid
+    renderRowReview(); // computes state.valid/skipped and renders the real grid
     stepRail.unlock([2, 3, 4]);
     stepRail.goTo(2);
   } catch (err) {

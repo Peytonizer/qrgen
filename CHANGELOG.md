@@ -4,6 +4,23 @@ One line per meaningful change. Newest first.
 
 ## Unreleased
 
+- Added QR generation and styling (build step 5): `js/qr.js` wraps vendored `qr-code-styling`
+  1.9.2 with the four exact presets from SPEC.md and the two colour guardrails (foreground
+  must be darker than background; contrast ratio banded at 4:1/7:1). The Style step now
+  renders a real preset picker, foreground/background colour wells, and a live preview grid
+  — one QR per valid row, regenerating on every preset or colour change. A blocked colour is
+  rejected and the well reverts; a caution-band colour applies with a visible warning.
+  Resolved with Matt: the Gradient preset has two foreground stops, so the single foreground
+  well disables itself rather than reinterpreting a two-stop gradient. Verified
+  `checkColours` against the spec's known pairs (black/white ~21:1 ok, `#767676`/white ~4.5:1
+  caution, white-on-black blocked by rule 1 despite 21:1) before wiring it up, and confirmed
+  live in-browser that a blocked colour reverts with a message and a caution colour applies
+  with one. Also did a lightweight automated sanity check — decoding a rendered QR back with
+  a third-party JS decoder — which round-tripped an ASCII vCard byte-for-byte; it hit a known
+  decoder limitation with non-ASCII content (any accented character decodes as empty rather
+  than garbled) unrelated to our output, so it doesn't stand in for the real-phone scan test
+  SPEC.md calls for, which is still outstanding — the Zoë row is the one case this check
+  couldn't clear, so it's worth scanning first.
 - Added `js/vcard.js`, building a vCard 3.0 string per RFC 2426 from a row's mapped fields
   (build step 4): CRLF line joins, no 75-octet folding, and escaping applied in the order
   the RFC requires — backslash, then semicolon, comma, newline — so the escapes can't

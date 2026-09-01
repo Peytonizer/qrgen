@@ -15,9 +15,9 @@
 </header>
 
 <main>
-  <!-- Build step 3: the step rail and the four panels, only the current one visible.
-       Style (3) and Download (4) are placeholders until build steps 5-7. The dark
-       staging room visual direction is a step 8 design pass, not this one. -->
+  <!-- The step rail and four panels, only the current one visible. Download (4) is a
+       placeholder until build step 7. The dark staging room visual direction is a
+       step 8 design pass, not this one. -->
   <nav class="step-rail" aria-label="qrgen steps">
     <ol>
       <li><button type="button" class="step-rail__step" data-step="1">1. File</button></li>
@@ -51,7 +51,23 @@
   </section>
 
   <section class="step-panel" id="step-3" data-step-panel="3" hidden>
-    <p class="placeholder-note">The style picker lands in the next build step.</p>
+    <h2>Style</h2>
+    <div class="preset-picker" id="preset-picker"></div>
+
+    <div class="colour-controls">
+      <label class="colour-well">
+        <span>Foreground</span>
+        <input type="color" id="fg-color">
+      </label>
+      <label class="colour-well">
+        <span>Background</span>
+        <input type="color" id="bg-color">
+      </label>
+      <button type="button" id="reset-to-preset">Reset to preset</button>
+    </div>
+    <p class="colour-status" id="colour-status" hidden></p>
+
+    <div class="qr-grid" id="qr-grid"></div>
   </section>
 
   <section class="step-panel" id="step-4" data-step-panel="4" hidden>
@@ -69,6 +85,7 @@
 </footer>
 
 <script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/qr-code-styling.js"></script>
 <script type="module" src="js/app.js"></script>
 
 </body>
