@@ -15,25 +15,47 @@
 </header>
 
 <main>
-  <!-- Build step 2: drop zone + file picker → parse first sheet → raw preview table.
-       Column mapping, styling and QR generation land in steps 3-6; this is intentionally
-       bare pending the step 8 design pass. -->
-  <section class="dropzone" id="dropzone" tabindex="0" aria-label="Upload a spreadsheet of contacts">
-    <p>Drag a spreadsheet here, or</p>
-    <label class="file-picker">
-      <input type="file" id="file-input" accept=".xlsx,.xls,.csv">
-      <span>Choose file</span>
-    </label>
-    <p class="dropzone-hint">Accepts .xlsx, .xls or .csv</p>
+  <!-- Build step 3: the step rail and the four panels, only the current one visible.
+       Style (3) and Download (4) are placeholders until build steps 5-7. The dark
+       staging room visual direction is a step 8 design pass, not this one. -->
+  <nav class="step-rail" aria-label="qrgen steps">
+    <ol>
+      <li><button type="button" class="step-rail__step" data-step="1">1. File</button></li>
+      <li><button type="button" class="step-rail__step" data-step="2">2. Columns</button></li>
+      <li><button type="button" class="step-rail__step" data-step="3">3. Style</button></li>
+      <li><button type="button" class="step-rail__step" data-step="4">4. Download</button></li>
+    </ol>
+  </nav>
+
+  <section class="step-panel" id="step-1" data-step-panel="1">
+    <section class="dropzone" id="dropzone" tabindex="0" aria-label="Upload a spreadsheet of contacts">
+      <p>Drag a spreadsheet here, or</p>
+      <label class="file-picker">
+        <input type="file" id="file-input" accept=".xlsx,.xls,.csv">
+        <span>Choose file</span>
+      </label>
+      <p class="dropzone-hint">Accepts .xlsx, .xls or .csv</p>
+    </section>
+
+    <p class="error" id="parse-error" hidden></p>
   </section>
 
-  <p class="error" id="parse-error" hidden></p>
+  <section class="step-panel" id="step-2" data-step-panel="2" hidden>
+    <h2>Map your columns</h2>
+    <p class="step-intro">
+      qrgen guessed which column is which from your headers. Correct any wrong guess below.
+    </p>
+    <div class="mapping-grid" id="mapping-grid"></div>
 
-  <section id="table-section" hidden>
-    <h2>Parsed rows</h2>
-    <div class="table-scroll">
-      <table id="preview-table"></table>
-    </div>
+    <div id="row-review"></div>
+  </section>
+
+  <section class="step-panel" id="step-3" data-step-panel="3" hidden>
+    <p class="placeholder-note">The style picker lands in the next build step.</p>
+  </section>
+
+  <section class="step-panel" id="step-4" data-step-panel="4" hidden>
+    <p class="placeholder-note">Downloads land in a later build step.</p>
   </section>
 
   <p class="privacy">

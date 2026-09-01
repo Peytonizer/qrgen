@@ -4,6 +4,14 @@ One line per meaningful change. Newest first.
 
 ## Unreleased
 
+- Added the step rail and column mapping (build step 3): a four-step nav (File, Columns,
+  Style, Download) where step 1 gates step 2, then all four are freely reachable once a
+  file is parsed. Columns auto-detects the five fields from the header synonym lists in
+  `js/columns.js`, shows an override `<select>` per field, and splits rows into a valid
+  table and a greyed "Skipped rows" table with a reason each — re-mapping re-validates
+  live, without re-reading the file. Style and Download are placeholders until their own
+  build steps. Verified against the fixture: auto-detection gets all five columns right
+  and the split matches the spec exactly (10 valid, 2 skipped).
 - Parse an uploaded spreadsheet into a raw preview table (build step 2): a drop zone plus
   file picker feeds `.xlsx`/`.xls`/`.csv` through vendored SheetJS 0.18.5 into row objects,
   dumped straight into an HTML table with no mapping or QR generation yet. Blank rows are
