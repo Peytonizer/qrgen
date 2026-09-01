@@ -21,8 +21,17 @@ internet and it would still work.
 1. Open the site and drop in an `.xlsx`, `.xls` or `.csv` file.
 2. Check the detected columns. qrgen guesses which column is which from the headers; if it
    guesses wrong, correct it with the dropdowns.
-3. Pick a style.
+3. Pick a style, and set the foreground and background colours if you want to match a
+   brand palette.
 4. Download the codes individually, or all at once as a zip.
+
+### About the colours
+
+qrgen won't let you make a code that can't be scanned. Colours need enough contrast
+between foreground and background, and the foreground has to be the darker of the two —
+light-on-dark codes fail on a lot of scanners no matter how striking they look. If a
+combination is too low-contrast it's rejected with an explanation; if it's borderline
+you'll get a caution but it will still apply.
 
 ### Columns
 
@@ -61,6 +70,10 @@ Then visit `http://localhost:8000`.
 
 There is no build step and no dependencies to install. The three libraries qrgen uses are
 committed in `vendor/` — see `vendor/README.md` for versions and licences.
+
+## Licence
+
+MIT — see [LICENSE](LICENSE).
 
 ## Built with
 
