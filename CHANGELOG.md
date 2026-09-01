@@ -4,6 +4,14 @@ One line per meaningful change. Newest first.
 
 ## Unreleased
 
+- Parse an uploaded spreadsheet into a raw preview table (build step 2): a drop zone plus
+  file picker feeds `.xlsx`/`.xls`/`.csv` through vendored SheetJS 0.18.5 into row objects,
+  dumped straight into an HTML table with no mapping or QR generation yet. Blank rows are
+  filtered explicitly, since a row whose cells are all present-but-empty isn't caught by
+  SheetJS's own `blankrows` option. CSV is decoded as UTF-8 text before parsing rather than
+  read as raw bytes — otherwise non-ASCII characters (e.g. "Zoë") get mis-decoded when the
+  file has no BOM. Verified against the fixture data that a leading zero in a phone number
+  survives the `.xlsx` round trip via `raw: false`.
 - Settled the interface as a four-step guided flow after mocking up two directions. The
   skipped-row review sits inside the column-mapping step rather than in a step of its own,
   so correcting a mapping visibly shrinks the list of rows that can't be used.

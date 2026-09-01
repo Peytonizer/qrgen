@@ -57,13 +57,79 @@ h1 {
 
 main { margin-top: var(--gap); }
 
-.placeholder {
+.dropzone {
   padding: 3rem 1.5rem;
   border: 1px dashed var(--line);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--ink-muted);
   text-align: center;
+  cursor: pointer;
+}
+
+.dropzone:focus-visible,
+.dropzone.dragover {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.dropzone p { margin: 0.5rem 0; }
+
+.dropzone-hint { font-size: 0.85rem; }
+
+.file-picker {
+  display: inline-block;
+  margin: 0.25rem 0;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.file-picker input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.error {
+  margin-top: var(--gap);
+  padding: 1rem 1.15rem;
+  border-left: 3px solid #c4553d;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+#table-section { margin-top: var(--gap); }
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+th, td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+thead th {
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-weight: 600;
 }
 
 .privacy {

@@ -15,11 +15,25 @@
 </header>
 
 <main>
-  <!-- Build step 1 is deployment verification only: this shell confirms GitHub Pages
-       serves the repo root correctly before any application logic is written. The file
-       input, column mapping, style picker and preview grid land in steps 2-6. -->
-  <section class="placeholder">
-    <p>Under construction.</p>
+  <!-- Build step 2: drop zone + file picker → parse first sheet → raw preview table.
+       Column mapping, styling and QR generation land in steps 3-6; this is intentionally
+       bare pending the step 8 design pass. -->
+  <section class="dropzone" id="dropzone" tabindex="0" aria-label="Upload a spreadsheet of contacts">
+    <p>Drag a spreadsheet here, or</p>
+    <label class="file-picker">
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv">
+      <span>Choose file</span>
+    </label>
+    <p class="dropzone-hint">Accepts .xlsx, .xls or .csv</p>
+  </section>
+
+  <p class="error" id="parse-error" hidden></p>
+
+  <section id="table-section" hidden>
+    <h2>Parsed rows</h2>
+    <div class="table-scroll">
+      <table id="preview-table"></table>
+    </div>
   </section>
 
   <p class="privacy">
@@ -31,6 +45,9 @@
 <footer>
   <a href="https://github.com/Peytonizer/qrgen">Source on GitHub</a>
 </footer>
+
+<script src="vendor/xlsx.full.min.js"></script>
+<script type="module" src="js/app.js"></script>
 
 </body>
 </html>
