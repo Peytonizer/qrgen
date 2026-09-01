@@ -1,0 +1,88 @@
+/* Palette and scale live as custom properties so the step 7 design pass can retheme the
+   app without hunting through rules. Named by role, not by colour, for the same reason. */
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --ink: #17171a;
+  --ink-muted: #5f5f6b;
+  --line: #e2e2dd;
+  --accent: #1f4fd8;
+
+  --radius: 10px;
+  --gap: 1.5rem;
+  --measure: 62ch;
+
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131316;
+    --surface: #1c1c21;
+    --ink: #f2f2f0;
+    --ink-muted: #a3a3ad;
+    --line: #32323a;
+    --accent: #7ba2ff;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: clamp(1.5rem, 5vw, 4rem);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.masthead, main, footer {
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3rem);
+  letter-spacing: -0.03em;
+}
+
+.tagline {
+  margin: 0.25rem 0 0;
+  color: var(--ink-muted);
+  font-size: 1.1rem;
+}
+
+main { margin-top: var(--gap); }
+
+.placeholder {
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+.privacy {
+  margin-top: var(--gap);
+  padding: 1rem 1.15rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: 0.95rem;
+}
+
+.privacy strong { color: var(--ink); }
+
+footer {
+  margin-top: calc(var(--gap) * 2);
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+a { color: var(--accent); }
