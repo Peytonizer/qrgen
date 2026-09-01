@@ -18,7 +18,8 @@ internet and it would still work.
 
 ## Usage
 
-1. Open the site and drop in an `.xlsx`, `.xls` or `.csv` file.
+1. Open the site and drop in an `.xlsx`, `.xls` or `.csv` file — or, if you don't have one
+   handy, download a blank template or a small sample file right from the file step.
 2. Check the detected columns. qrgen guesses which column is which from the headers; if it
    guesses wrong, correct it with the dropdowns.
 3. Pick a style, set the foreground and background colours if you want to match a brand

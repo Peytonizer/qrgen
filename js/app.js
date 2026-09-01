@@ -8,6 +8,7 @@ import { buildVCard } from './vcard.js';
 import { PRESETS, isGradient, checkColours, checkGradientColours, buildQrOptions, createQrCode } from './qr.js';
 import { composeCaptionedSvg } from './caption.js';
 import { generateFilenameSlugs, buildCardBlobs, buildZipBlob, triggerDownload } from './download.js';
+import { buildTemplateBlob, buildSampleDataBlob } from './sample-data.js';
 
 const QR_PREVIEW_SIZE = 220;
 const QR_FILMSTRIP_SIZE = 120;
@@ -19,6 +20,8 @@ const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('file-input');
 const errorEl = document.getElementById('parse-error');
 const loadingStatus = document.getElementById('loading-status');
+const downloadTemplateBtn = document.getElementById('download-template');
+const downloadSampleBtn = document.getElementById('download-sample');
 const mappingGrid = document.getElementById('mapping-grid');
 const rowReview = document.getElementById('row-review');
 const presetPicker = document.getElementById('preset-picker');
@@ -469,3 +472,6 @@ dropzone.addEventListener('keydown', (event) => {
     fileInput.click();
   }
 });
+
+downloadTemplateBtn.addEventListener('click', () => triggerDownload(buildTemplateBlob(), 'qrgen-template.xlsx'));
+downloadSampleBtn.addEventListener('click', () => triggerDownload(buildSampleDataBlob(), 'qrgen-sample-data.xlsx'));
