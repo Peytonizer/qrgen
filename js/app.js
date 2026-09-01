@@ -7,6 +7,7 @@ import { createStepRail } from './steps.js';
 import { FIELDS, FIELD_LABELS, detectMapping, validateRows } from './columns.js';
 import { buildVCard } from './vcard.js';
 import { PRESETS, isGradient, checkColours, checkGradientColours, buildQrOptions, createQrCode } from './qr.js';
+import { composeCaptionedSvg } from './caption.js';
 
 const QR_PREVIEW_SIZE = 220;
 
@@ -20,6 +21,7 @@ const fgColorInput = document.getElementById('fg-color');
 const bgColorInput = document.getElementById('bg-color');
 const resetToPresetBtn = document.getElementById('reset-to-preset');
 const colourStatus = document.getElementById('colour-status');
+const captionToggle = document.getElementById('caption-toggle');
 const qrGrid = document.getElementById('qr-grid');
 
 const stepRail = createStepRail(
@@ -249,7 +251,36 @@ bgColorInput.addEventListener('input', () => {
 
 resetToPresetBtn.addEventListener('click', () => selectPreset(state.style.presetId));
 
-/** Regenerates the preview grid: one QR card per currently valid row. */
+captionToggle.addEventListener('change', () => {
+  state.captionsEnabled = captionToggle.checked;
+  renderQrGrid();
+});
+
+/**
+ * Renders one bare QR (no caption) into `container` for `fields`, using the
+ * current style. Returns the QRCodeStyling instance.
+ */
+function renderBareQr(container, fields, preset) {
+  const qr = createQrCode(
+    buildQrOptions({
+      data: buildVCard(fields),
+      size: QR_PREVIEW_SIZE,
+      foreground: state.style.foreground,
+      background: state.style.background,
+      dotsType: preset.dotsType,
+      cornersSquareType: preset.cornersSquareType,
+    })
+  );
+  qr.append(container);
+  return qr;
+}
+
+/**
+ * Regenerates the preview grid: one QR card per currently valid row. When
+ * captions are on, each card shows the actual composited SVG (caption.js) —
+ * not a CSS approximation — so the preview stays truthful to what gets
+ * exported (see SPEC.md, "Captions").
+ */
 function renderQrGrid() {
   qrGrid.innerHTML = '';
   if (!state.valid) return;
@@ -262,24 +293,30 @@ function renderQrGrid() {
     const qrContainer = document.createElement('div');
     card.appendChild(qrContainer);
 
-    const name = document.createElement('p');
-    name.className = 'qr-card__name';
-    name.textContent = [fields.firstName, fields.lastName].filter(Boolean).join(' ');
-    card.appendChild(name);
+    if (state.captionsEnabled) {
+      // Render the bare QR off-DOM just to get its serialized SVG, then
+      // composite the real caption around it for display.
+      const offDom = document.createElement('div');
+      renderBareQr(offDom, fields, preset);
+      const bareSvg = offDom.querySelector('svg');
+      const svgString = bareSvg ? new XMLSerializer().serializeToString(bareSvg) : '';
+      qrContainer.innerHTML = composeCaptionedSvg({
+        qrSvgString: svgString,
+        fields,
+        background: state.style.background,
+        size: QR_PREVIEW_SIZE,
+      });
+    } else {
+      renderBareQr(qrContainer, fields, preset);
+      // Only shown when captions are off — with them on, the composited
+      // card already carries the name, and repeating it would be redundant.
+      const name = document.createElement('p');
+      name.className = 'qr-card__name';
+      name.textContent = [fields.firstName, fields.lastName].filter(Boolean).join(' ');
+      card.appendChild(name);
+    }
 
     qrGrid.appendChild(card);
-
-    const qr = createQrCode(
-      buildQrOptions({
-        data: buildVCard(fields),
-        size: QR_PREVIEW_SIZE,
-        foreground: state.style.foreground,
-        background: state.style.background,
-        dotsType: preset.dotsType,
-        cornersSquareType: preset.cornersSquareType,
-      })
-    );
-    qr.append(qrContainer);
   });
 }
 
@@ -298,7 +335,7 @@ async function handleFile(file) {
       showError(`"${file.name}" has no data rows.`);
       return;
     }
-    state = { headers, rows, mapping: detectMapping(headers), style: null };
+    state = { headers, rows, mapping: detectMapping(headers), style: null, captionsEnabled: captionToggle.checked };
     renderMappingGrid();
     selectPreset(PRESETS[0].id); // also renders the colour wells and (empty) grid
     renderRowReview(); // computes state.valid/skipped and renders the real grid

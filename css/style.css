@@ -266,6 +266,15 @@ main { margin-top: var(--gap); }
   color: #8a6d1a;
 }
 
+.caption-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: var(--gap);
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
 .qr-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

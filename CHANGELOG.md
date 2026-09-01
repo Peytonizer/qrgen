@@ -4,6 +4,17 @@ One line per meaningful change. Newest first.
 
 ## Unreleased
 
+- Added captions (build step 6): `js/caption.js` composites the person's name, email and
+  phone beneath the QR for both export paths — an offscreen canvas for PNG, an outer `<svg>`
+  wrapping the QR's own for SVG — so a caption is never preview-only styling. The Style step
+  gained the on/off toggle (on by default), and the live preview now shows the actual
+  composited output when captions are on, not a CSS approximation. Verified in-browser
+  against the fixture's specific edge cases: "Bartholomew Fanshawe-Wallington" shrinks then
+  wraps to two lines without clipping, the comma in "Smith, Jr" survives XML escaping intact
+  (a deliberately different escaper from the vCard one, which would have corrupted it), "Zoë"
+  survives to a well-formed, DOMParser-validated SVG with a UTF-8 XML declaration, and the
+  toggle off reverts to the exact bare-code output from build step 5. Also spot-checked the
+  PNG canvas path composites to a correctly-sized, non-throwing canvas.
 - Added QR generation and styling (build step 5): `js/qr.js` wraps vendored `qr-code-styling`
   1.9.2 with the four exact presets from SPEC.md and the two colour guardrails (foreground
   must be darker than background; contrast ratio banded at 4:1/7:1). The Style step now
