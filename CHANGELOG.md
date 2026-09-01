@@ -4,7 +4,7 @@ One line per meaningful change. Newest first.
 
 ## Unreleased
 
-- Added "Download a blank template" and "download sample data" links to step 1
+- Added "Download a blank template" and "Download sample data" links to step 1
   (`js/sample-data.js`). Both are generated client-side via SheetJS rather than committed as
   spreadsheet files — the project's file-in-repo rule applies even to fictional data — and
   use the exact header spellings `columns.js` matches first, so re-uploading either one
