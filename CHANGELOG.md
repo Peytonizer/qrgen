@@ -4,6 +4,20 @@ One line per meaningful change. Newest first.
 
 ## Unreleased
 
+- Delivered the dark staging room visual direction (build step 8): self-hosted Bricolage
+  Grotesque, IBM Plex Sans and IBM Plex Mono (SIL OFL, `fonts/`, latin subset only — see
+  `fonts/README.md`) and rebuilt `css/style.css` around SPEC.md's exact colour tokens and
+  typography pairing. The Style step's preview is now the intended hero card + filmstrip
+  (one large card for the first valid row, smaller cards for the rest) instead of a uniform
+  grid, and gained an always-visible contrast readout alongside the existing caution/blocked
+  messaging. Added a loading state while a file is being read, an empty state on the Style
+  step when no rows are valid, and `:focus-visible` styling across the drop zone, step rail,
+  mapping selects, preset tiles, colour wells and every button. Verified in-browser: fonts
+  render (not a silent fallback), the hero card reads as "an object on a table" per the
+  brief, and — since real window resizing isn't available in this sandbox — responsive
+  behaviour at 390px verified via an iframe sized to that width, confirming the step rail
+  wraps to two rows with connecting lines dropped, and both the Columns and Style steps stay
+  a single unbroken column with no horizontal overflow.
 - Added downloads (build step 7): `js/download.js` builds each card's SVG and PNG at
   1000px (via `qr-code-styling`'s own `getRawData`, composited with `caption.js` when
   captions are on), vendors JSZip 3.10.1 for the "download all" archive, and slugs

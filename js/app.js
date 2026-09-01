@@ -1,6 +1,5 @@
-// Entry point: wires the drop zone, the step rail, column mapping and the
-// style/preview grid together. Download (step 4) is a placeholder until its
-// own build step — see SPEC.md, "Build order".
+// Entry point: wires the drop zone, the step rail, column mapping, the
+// style/preview (hero card + filmstrip) and downloads together.
 
 import { isAcceptedFile, parseFile } from './parse.js';
 import { createStepRail } from './steps.js';
@@ -11,6 +10,7 @@ import { composeCaptionedSvg } from './caption.js';
 import { generateFilenameSlugs, buildCardBlobs, buildZipBlob, triggerDownload } from './download.js';
 
 const QR_PREVIEW_SIZE = 220;
+const QR_FILMSTRIP_SIZE = 120;
 // Target at least 1000px square for the code itself, before the caption is
 // added — high enough to print (SPEC.md, build order step 7).
 const QR_EXPORT_SIZE = 1000;
@@ -18,6 +18,7 @@ const QR_EXPORT_SIZE = 1000;
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('file-input');
 const errorEl = document.getElementById('parse-error');
+const loadingStatus = document.getElementById('loading-status');
 const mappingGrid = document.getElementById('mapping-grid');
 const rowReview = document.getElementById('row-review');
 const presetPicker = document.getElementById('preset-picker');
@@ -26,7 +27,9 @@ const bgColorInput = document.getElementById('bg-color');
 const resetToPresetBtn = document.getElementById('reset-to-preset');
 const colourStatus = document.getElementById('colour-status');
 const captionToggle = document.getElementById('caption-toggle');
-const qrGrid = document.getElementById('qr-grid');
+const contrastReadout = document.getElementById('contrast-readout');
+const heroCard = document.getElementById('hero-card');
+const filmstrip = document.getElementById('filmstrip');
 const downloadAllBtn = document.getElementById('download-all');
 const downloadGrid = document.getElementById('download-grid');
 
@@ -158,7 +161,7 @@ function renderRowReview() {
     rowReview.appendChild(skippedWrap);
   }
 
-  renderQrGrid();
+  renderStylePreview();
   renderDownloadGrid();
 }
 
@@ -197,10 +200,11 @@ function selectPreset(id) {
     foreground: isGradient(preset.foreground) ? { ...preset.foreground, stops: [...preset.foreground.stops] } : { ...preset.foreground },
     background: preset.background,
   };
+  updateContrastReadout();
   hideColourStatus();
   renderPresetPicker();
   renderColourWells();
-  renderQrGrid();
+  renderStylePreview();
 }
 
 function hideColourStatus() {
@@ -218,6 +222,14 @@ function showColourStatus(verdict) {
   colourStatus.textContent = verdict.reason;
   colourStatus.classList.toggle('is-blocked', verdict.status === 'blocked');
   colourStatus.classList.toggle('is-caution', verdict.status === 'caution');
+}
+
+/** Always-visible "N.N:1" readout for the current foreground/background pair (SPEC.md's "contrast readout"). */
+function updateContrastReadout() {
+  const verdict = isGradient(state.style.foreground)
+    ? checkGradientColours(state.style.foreground.stops, state.style.background)
+    : checkColours(state.style.foreground.color, state.style.background);
+  contrastReadout.textContent = `Contrast ${verdict.ratio.toFixed(1)}:1`;
 }
 
 /** Syncs the colour well inputs to state.style. The foreground well is disabled for the Gradient preset — it has no single colour to edit (see SPEC.md; resolved with Matt as: disable rather than reinterpret). */
@@ -238,7 +250,8 @@ fgColorInput.addEventListener('input', () => {
   }
   state.style.foreground = { color: hex };
   showColourStatus(verdict);
-  renderQrGrid();
+  updateContrastReadout();
+  renderStylePreview();
 });
 
 bgColorInput.addEventListener('input', () => {
@@ -253,25 +266,26 @@ bgColorInput.addEventListener('input', () => {
   }
   state.style.background = hex;
   showColourStatus(verdict);
-  renderQrGrid();
+  updateContrastReadout();
+  renderStylePreview();
 });
 
 resetToPresetBtn.addEventListener('click', () => selectPreset(state.style.presetId));
 
 captionToggle.addEventListener('change', () => {
   state.captionsEnabled = captionToggle.checked;
-  renderQrGrid();
+  renderStylePreview();
 });
 
 /**
  * Renders one bare QR (no caption) into `container` for `fields`, using the
- * current style. Returns the QRCodeStyling instance.
+ * current style, at `size`. Returns the QRCodeStyling instance.
  */
-function renderBareQr(container, fields, preset) {
+function renderBareQr(container, fields, preset, size) {
   const qr = createQrCode(
     buildQrOptions({
       data: buildVCard(fields),
-      size: QR_PREVIEW_SIZE,
+      size,
       foreground: state.style.foreground,
       background: state.style.background,
       dotsType: preset.dotsType,
@@ -283,47 +297,52 @@ function renderBareQr(container, fields, preset) {
 }
 
 /**
- * Regenerates the preview grid: one QR card per currently valid row. When
- * captions are on, each card shows the actual composited SVG (caption.js) —
- * not a CSS approximation — so the preview stays truthful to what gets
- * exported (see SPEC.md, "Captions").
+ * Renders one card into `container` at `size`: bare, or — when captions are
+ * on — the actual composited SVG (caption.js), not a CSS approximation, so
+ * the preview stays truthful to what gets exported (see SPEC.md, "Captions").
  */
-function renderQrGrid() {
-  qrGrid.innerHTML = '';
+function renderCard(container, fields, preset, size) {
+  if (state.captionsEnabled) {
+    // Render the bare QR off-DOM just to get its serialized SVG, then
+    // composite the real caption around it for display.
+    const offDom = document.createElement('div');
+    renderBareQr(offDom, fields, preset, size);
+    const bareSvg = offDom.querySelector('svg');
+    const svgString = bareSvg ? new XMLSerializer().serializeToString(bareSvg) : '';
+    container.innerHTML = composeCaptionedSvg({ qrSvgString: svgString, fields, background: state.style.background, size });
+  } else {
+    renderBareQr(container, fields, preset, size);
+  }
+}
+
+/**
+ * Renders the Style step's preview: one large "hero" card for the first
+ * valid row, and a filmstrip of smaller cards for the rest (SPEC.md,
+ * "Interface — Walkthrough").
+ */
+function renderStylePreview() {
+  heroCard.innerHTML = '';
+  filmstrip.innerHTML = '';
   if (!state.valid) return;
 
+  if (state.valid.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'hero-card__empty';
+    empty.textContent = 'No valid rows to preview yet — check the column mapping in step 2.';
+    heroCard.appendChild(empty);
+    return;
+  }
+
   const preset = currentPreset();
-  state.valid.forEach(({ fields }) => {
+  const [hero, ...rest] = state.valid;
+
+  renderCard(heroCard, hero.fields, preset, QR_PREVIEW_SIZE);
+
+  rest.forEach(({ fields }) => {
     const card = document.createElement('div');
-    card.className = 'qr-card';
-
-    const qrContainer = document.createElement('div');
-    card.appendChild(qrContainer);
-
-    if (state.captionsEnabled) {
-      // Render the bare QR off-DOM just to get its serialized SVG, then
-      // composite the real caption around it for display.
-      const offDom = document.createElement('div');
-      renderBareQr(offDom, fields, preset);
-      const bareSvg = offDom.querySelector('svg');
-      const svgString = bareSvg ? new XMLSerializer().serializeToString(bareSvg) : '';
-      qrContainer.innerHTML = composeCaptionedSvg({
-        qrSvgString: svgString,
-        fields,
-        background: state.style.background,
-        size: QR_PREVIEW_SIZE,
-      });
-    } else {
-      renderBareQr(qrContainer, fields, preset);
-      // Only shown when captions are off — with them on, the composited
-      // card already carries the name, and repeating it would be redundant.
-      const name = document.createElement('p');
-      name.className = 'qr-card__name';
-      name.textContent = [fields.firstName, fields.lastName].filter(Boolean).join(' ');
-      card.appendChild(name);
-    }
-
-    qrGrid.appendChild(card);
+    card.className = 'filmstrip__card';
+    filmstrip.appendChild(card);
+    renderCard(card, fields, preset, QR_FILMSTRIP_SIZE);
   });
 }
 
@@ -398,6 +417,8 @@ async function handleFile(file) {
     return;
   }
   clearError();
+  loadingStatus.textContent = `Reading "${file.name}"…`;
+  loadingStatus.hidden = false;
   try {
     const { headers, rows } = await parseFile(file);
     if (rows.length === 0) {
@@ -406,12 +427,14 @@ async function handleFile(file) {
     }
     state = { headers, rows, mapping: detectMapping(headers), style: null, captionsEnabled: captionToggle.checked };
     renderMappingGrid();
-    selectPreset(PRESETS[0].id); // also renders the colour wells and (empty) grid
-    renderRowReview(); // computes state.valid/skipped and renders the real grid
+    selectPreset(PRESETS[0].id); // also renders the colour wells and readout
+    renderRowReview(); // computes state.valid/skipped and renders the real preview
     stepRail.unlock([2, 3, 4]);
     stepRail.goTo(2);
   } catch (err) {
     showError(err.message);
+  } finally {
+    loadingStatus.hidden = true;
   }
 }
 

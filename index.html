@@ -36,6 +36,7 @@
       <p class="dropzone-hint">Accepts .xlsx, .xls or .csv</p>
     </section>
 
+    <p class="loading-status" id="loading-status" hidden></p>
     <p class="error" id="parse-error" hidden></p>
   </section>
 
@@ -51,27 +52,37 @@
 
   <section class="step-panel" id="step-3" data-step-panel="3" hidden>
     <h2>Style</h2>
-    <div class="preset-picker" id="preset-picker"></div>
+    <div class="style-layout">
+      <div class="style-controls">
+        <div class="preset-picker" id="preset-picker"></div>
 
-    <div class="colour-controls">
-      <label class="colour-well">
-        <span>Foreground</span>
-        <input type="color" id="fg-color">
-      </label>
-      <label class="colour-well">
-        <span>Background</span>
-        <input type="color" id="bg-color">
-      </label>
-      <button type="button" id="reset-to-preset">Reset to preset</button>
+        <div>
+          <div class="colour-controls">
+            <label class="colour-well">
+              <span>Foreground</span>
+              <input type="color" id="fg-color">
+            </label>
+            <label class="colour-well">
+              <span>Background</span>
+              <input type="color" id="bg-color">
+            </label>
+            <button type="button" id="reset-to-preset">Reset to preset</button>
+          </div>
+          <p class="contrast-readout" id="contrast-readout"></p>
+        </div>
+        <p class="colour-status" id="colour-status" hidden></p>
+
+        <label class="caption-toggle">
+          <input type="checkbox" id="caption-toggle" checked>
+          Show name and contact details on the card
+        </label>
+      </div>
+
+      <div class="style-preview">
+        <div class="hero-card" id="hero-card"></div>
+        <div class="filmstrip" id="filmstrip"></div>
+      </div>
     </div>
-    <p class="colour-status" id="colour-status" hidden></p>
-
-    <label class="caption-toggle">
-      <input type="checkbox" id="caption-toggle" checked>
-      Show name and contact details on the card
-    </label>
-
-    <div class="qr-grid" id="qr-grid"></div>
   </section>
 
   <section class="step-panel" id="step-4" data-step-panel="4" hidden>
