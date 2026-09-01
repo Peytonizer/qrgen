@@ -1,0 +1,12 @@
+# Contact data must never be committed — this repo is public.
+# Test spreadsheets belong in sample-data/ with fictional people.
+*.xlsx
+*.xls
+*.csv
+/sample-data/
+
+# Private working instructions (imported from outside the repo)
+CLAUDE.local.md
+
+# macOS
+.DS_Store
