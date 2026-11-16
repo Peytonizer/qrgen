@@ -4,6 +4,8 @@ One line per meaningful change. Newest first.
 
 ## Unreleased
 
+## v1.1.0 — 2026-11-16
+
 - Fixed the step rail's current-step border losing its left (brass) edge on mobile —
   reported as the "1. File" tile looking cut off. Root cause was one level deeper than the
   visible symptom: `flex: 1` was set on the `<button>`, but the actual flex/grid item is its
